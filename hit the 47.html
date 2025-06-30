@@ -9,7 +9,7 @@
     body {
   font-family: 'Inter', sans-serif; /* Using Inter font */
   text-align: center;
-  background: url("https://static.vecteezy.com/system/resources/thumbnails/007/718/271/small_2x/blue-orange-and-white-modern-curve-background-free-vector.jpg");
+  background: url("https://img.freepik.com/premium-vector/white-background-with-blue-orange-colorful-abstract-design_222229-3374.jpg");
   background-size: cover;
   margin: 0;
   padding: 20px;
@@ -453,7 +453,7 @@
   <button id="signUpBtn">Sign Up</button>
 
   <div id="score">Score: 0</div>
-  <div id="timer">Time: 120</div>
+  <div id="timer">Time: 60</div>
   <div id="progress">0/0</div>
   <button id="startButton">Start Game</button>
   <button id="restartButton">Restart Game</button>
@@ -467,7 +467,8 @@
   <!-- Background Music Audio Tag -->
   <audio id="backgroundMusic" loop>
     <!-- Using a royalty-free track example. Replace with your own audio source. -->
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    <source src="https://docs.google.com/uc?export=download&id=1L7QQtH6Mvfcsj8yAHxUK4sdca6EAs7Gr
+    " type="audio/mpeg">
     Your browser does not support the audio element.
   </audio>
 
@@ -683,8 +684,8 @@
     // Game state variables
     let correct = 0;    // Number of correct answers
     let answered = 0;   // Total questions answered
-    let timeLeft = 120; // Time remaining in seconds
-    const maxQ = 10;    // Maximum number of questions per game
+    let timeLeft = 60; // Time remaining in seconds
+    const maxQ = 1099999999999999;    // Maximum number of questions per game
     let timerID = null; // Timer interval ID
 
     // --- Helper Functions ---
@@ -1045,7 +1046,7 @@
             showMessage("Please wait for authentication to complete before starting the game.");
             return;
         }
-      correct = 0; answered = 0; timeLeft = 120; // Reset game state
+      correct = 0; answered = 0; timeLeft = 60; // Reset game state
       clearInterval(timerID); // Clear any existing timer
       updateDisplay(); // Update display with new state
       S.startBtn.style.display = 'none'; // Hide start button
