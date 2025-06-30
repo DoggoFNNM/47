@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hit the 47!</title>
+  <style>
+    /* Basic body styles for font and background */
+    body {
+  font-family: 'Inter', sans-serif; /* Using Inter font */
+  text-align: center;
+  background: url("https://static.vecteezy.com/system/resources/thumbnails/007/718/271/small_2x/blue-orange-and-white-modern-curve-background-free-vector.jpg");
+  background-size: cover;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+}
+
+
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    /* Game information displays */
+    #score, #timer, #progress {
+      font-size: 1.125rem; /* 18px */
+      margin: 5px;
+      color: #555;
+    }
+
+    /* Question display */
+    #question {
+      font-size: 1.75rem; /* 28px */
+      margin: 20px 0 10px;
+      display: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    #label {
+      font-size: 1.125rem; /* 18px */
+      margin-bottom: 10px;
+      display: none;
+      color: #777;
+    }
+
+    /* Options container (buttons) */
+    #options {
+      display: none;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      width: 100%; /* Ensure it takes full width on smaller screens */
+      max-width: 600px; /* Limit max width for larger screens */
+    }
+
+    #options button {
+      width: 100px;
+      height: 100px;
+      font-size: 1.125rem; /* 18px */
+      border: none;
+      border-radius: 10px; /* Rounded corners */
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0; /* Prevent shrinking below content */
+    }
+
+    #options button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    #options button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Game control buttons */
+    #startButton, #restartButton, #quitButton {
+      padding: 10px 20px;
+      font-size: 1rem; /* 16px */
+      border: none;
+      border-radius: 8px; /* Rounded corners */
+      cursor: pointer;
+      margin: 10px;
+      transition: background 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #startButton {
+      background: #3498db;
+      color: #fff;
+    }
+
+    #restartButton {
+      background: #e67e22;
+      color: #fff;
+      display: none;
+    }
+
+    #quitButton {
+      background: #c0392b;
+      color: #fff;
+      display: none;
+    }
+
+    #startButton:hover, #restartButton:hover, #quitButton:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    #startButton:active, #restartButton:active, #quitButton:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Answer feedback */
+    .correct {
+      background: #2ecc71 !important; /* Green */
+      animation: flashGreen 0.5s;
+    }
+
+    .wrong {
+      background: #e74c3c !important; /* Red */
+      animation: flashRed 0.5s;
+    }
+
+    @keyframes flashGreen {
+      0% { background-color: #2ecc71; }
+      50% { background-color: #a8eda8; }
+      100% { background-color: #2ecc71; }
+    }
+
+    @keyframes flashRed {
+      0% { background-color: #e74c3c; }
+      50% { background-color: #f7a49d; }
+      100% { background-color: #e74c3c; }
+    }
+
+    /* User authentication/settings buttons */
+    #loginBtn, #signUpBtn {
+      position: absolute;
+      top: 20px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 10px;
+      background: #3498db;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    #loginBtn { right: 20px; }
+    #signUpBtn { right: 110px; }
+
+    /* Settings button positioned on the left */
+    #settingsBtn {
+      position: absolute;
+      top: 20px;
+      left: 20px; /* Moved to the left */
+      padding: 8px 16px;
+      border: none;
+      border-radius: 10px;
+      background: #555;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.1s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+
+    #loginBtn:hover, #signUpBtn:hover, #settingsBtn:hover {
+      background: #2980b9;
+      transform: translateY(-1px);
+    }
+    #settingsBtn:hover {
+      background: #444; /* Darker grey on hover */
+    }
+
+
+    /* User status display - adjusted for settings button on left */
+    #userStatus {
+      position: absolute;
+      top: 50px; /* Moved down to avoid settingsBtn overlap */
+      left: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+    #userIdDisplay {
+        position: absolute; /* Also adjusted position */
+        top: 70px; /* Below userStatus */
+        left: 20px;
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none; /* This ensures modals are hidden by default */
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7); /* Darker overlay */
+      z-index: 1000; /* Ensure it's on top */
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      width: 90%; /* Responsive width */
+      max-width: 400px; /* Max width for larger screens */
+      padding: 20px;
+      border-radius: 15px;
+      position: relative;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content input {
+      width: calc(100% - 16px); /* Account for padding */
+      margin: 8px 0;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-sizing: border-box; /* Include padding in width */
+    }
+
+    .modal-content button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      margin-top: 10px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .modal-content button:hover {
+      background: #2980b9;
+    }
+
+    /* Specific style for logout button within settings modal */
+    #settingsModal #doLogout {
+        background: #e74c3c; /* Red for logout */
+    }
+    #settingsModal #doLogout:hover {
+        background: #c0392b; /* Darker red on hover */
+    }
+
+    /* Styles for music and sound effects controls */
+    .settings-group {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        text-align: left;
+    }
+    .settings-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+    }
+    .settings-group input[type="range"] {
+        width: 100%;
+        margin-bottom: 10px;
+        -webkit-appearance: none;
+        height: 8px;
+        border-radius: 5px;
+        background: #ddd;
+        outline: none;
+    }
+    .settings-group input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3498db;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .settings-group input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3498db;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .settings-group button.toggle-audio { /* Common style for music and sound toggle buttons */
+        background: #2ecc71; /* Green when active/playing */
+        margin-top: 5px;
+        width: 100%; /* Make button full width */
+    }
+    .settings-group button.toggle-audio.paused {
+        background: #e67e22; /* Orange when paused */
+    }
+
+    /* New button styles for modal navigation */
+    .modal-switch-btn {
+        background: none;
+        color: #3498db;
+        border: none;
+        padding: 5px 10px;
+        margin-top: 15px;
+        font-size: 0.9em;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .modal-switch-btn:hover {
+        color: #2980b9;
+        text-decoration: underline;
+    }
+
+
+    .toggle-eye {
+      position: absolute;
+      top: 50%; /* Center vertically */
+      right: 18px; /* Adjust based on input padding */
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #777;
+    }
+
+    /* Responsive adjustments for options layout */
+    @media (max-width: 600px) {
+      #options button {
+        width: 80px; /* Smaller buttons on small screens */
+        height: 80px;
+        font-size: 1rem;
+      }
+      #options {
+        gap: 10px;
+      }
+      body[data-orientation='portrait'] #options {
+        flex-direction: column;
+        gap: 10px;
+      }
+      #loginBtn, #signUpBtn, #settingsBtn { /* Grouped for mobile stacking */
+        position: static; /* Stack buttons on small screens */
+        margin-top: 10px;
+        width: auto;
+      }
+      #userStatus, #userIdDisplay { /* Also stack user status on mobile */
+          position: static;
+          margin: 5px auto;
+      }
+      .modal-content {
+        width: 95%;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+
+    /* Countdown overlay */
+    #countdownOverlay {
+      display: none; /* Changed from flex to none to hide by default */
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9); /* Darker for countdown */
+      color: white;
+      font-size: 100px;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    /* Leaderboard styles */
+    #leaderboard {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 300px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden; /* For rounded corners on list items */
+    }
+
+    #leaderboard li {
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      color: #555;
+    }
+
+    #leaderboard li:last-child {
+      border-bottom: none;
+    }
+
+    #leaderboard li:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+
+    #leaderboard li:first-child {
+      background-color: #ffeb3b; /* Gold for 1st place */
+      color: #333;
+    }
+
+    #leaderboard li:nth-child(2) {
+      background-color: #c0c0c0; /* Silver for 2nd place */
+      color: #333;
+    }
+
+    #leaderboard li:nth-child(3) {
+      background-color: #cd7f32; /* Bronze for 3rd place */
+      color: #333;
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+      display: none;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1001;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Hit the 47!</h1>
+  <span id="userStatus"></span>
+  <span id="userIdDisplay"></span>
+  <button id="settingsBtn">Settings</button> <!-- Settings Button is always visible, moved to left -->
+  <button id="loginBtn">Login</button>
+  <button id="signUpBtn">Sign Up</button>
+
+  <div id="score">Score: 0</div>
+  <div id="timer">Time: 120</div>
+  <div id="progress">0/0</div>
+  <button id="startButton">Start Game</button>
+  <button id="restartButton">Restart Game</button>
+  <button id="quitButton">Quit Game</button>
+  <div id="question">47</div>
+  <div id="label">Questions:</div>
+  <div id="options"></div>
+  <h3>🏆 Leaderboard</h3>
+  <ul id="leaderboard"></ul>
+
+  <!-- Background Music Audio Tag -->
+  <audio id="backgroundMusic" loop>
+    <!-- Using a royalty-free track example. Replace with your own audio source. -->
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Sound Effect Audio Tags -->
+  <audio id="correctSound">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="wrongSound">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="gameOverSound">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="buttonClickSound">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" type="audio/mpeg">
+  </audio>
+
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <button id="closeLogin" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5rem;cursor:pointer;">❌</button>
+      <h2>Login</h2>
+      <input id="loginEmail" type="email" placeholder="Email"> <!-- Changed to email -->
+      <div style="position:relative;">
+        <input id="loginPassword" type="password" placeholder="Password">
+        <span id="toggleLoginEye" class="toggle-eye">👁️</span>
+      </div>
+      <button id="doLogin">Log In</button>
+      <button id="goToSignUpBtn" class="modal-switch-btn">Don't have an account yet? Make one now</button>
+    </div>
+  </div>
+
+  <!-- Sign Up Modal -->
+  <div id="signUpModal" class="modal">
+    <div class="modal-content">
+      <button id="closeSignUp" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5rem;cursor:pointer;">❌</button>
+      <h2>Sign Up</h2>
+      <input id="signUpEmail" type="email" placeholder="Email">
+      <input id="signUpUsername" type="text" placeholder="Username">
+      <div style="position:relative;">
+        <input id="signUpPassword" type="password" placeholder="Password">
+        <span id="toggleSignUpEye" class="toggle-eye">👁️</span>
+      </div>
+      <!-- Confirm Password field with eye icon -->
+      <div style="position:relative;">
+        <input id="signUpConfirm" type="password" placeholder="Confirm Password">
+        <span id="toggleSignUpConfEye" class="toggle-eye">👁️</span>
+      </div>
+      <button id="doSignUp">Sign Up</button>
+      <button id="goToLoginBtn" class="modal-switch-btn">Already have an account? Login now</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <button id="closeSettings" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5rem;cursor:pointer;">❌</button>
+      <h2>Settings</h2>
+      <div class="settings-group">
+        <label for="volumeSlider">Music Volume:</label>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="0.5">
+        <button id="musicToggleBtn" class="toggle-audio">Pause Music</button>
+      </div>
+      <div class="settings-group">
+        <label>Sound Effects:</label>
+        <button id="sfxToggleBtn" class="toggle-audio">SFX On</button>
+      </div>
+      <div class="settings-group">
+        <p>Manage your account settings here.</p>
+        <button id="doLogout">Logout</button> <!-- Logout button moved inside settings -->
+      </div>
+      <div id="loginForMoreGroup" class="settings-group" style="text-align: center;">
+        <button id="goToLoginFromSettingsBtn" class="modal-switch-btn">Log in for more features!</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="countdownOverlay">3</div>
+  <div id="loadingSpinner" class="loading-spinner"></div>
+
+<script type="module">
+  // Import Firebase modules
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut,
+           createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"; // Added Auth methods
+  import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  // Global Firebase variables
+  let app;
+  let db;
+  let auth;
+  let currentUserId = null; // Firebase User ID (UID from Firebase Auth)
+  let currentUsername = null; // Game's username (stored in Firestore profile)
+
+  // Canvas environment variables for Firebase initialization
+  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+  // DOM refs (using a single 'S' object for brevity and organization) - declared early to be accessible
+  const S = {
+    score:     document.getElementById('score'),
+    timer:     document.getElementById('timer'),
+    progress:  document.getElementById('progress'),
+    question:  document.getElementById('question'),
+    label:     document.getElementById('label'),
+    options:   document.getElementById('options'),
+    startBtn:  document.getElementById('startButton'),
+    restartBtn:document.getElementById('restartButton'),
+    quitBtn:   document.getElementById('quitButton'),
+    userStatus:document.getElementById('userStatus'),
+    userIdDisplay: document.getElementById('userIdDisplay'),
+    cOverlay:  document.getElementById('countdownOverlay'),
+    loginBtn:  document.getElementById('loginBtn'),
+    signUpBtn: document.getElementById('signUpBtn'),
+    settingsBtn: document.getElementById('settingsBtn'), // New: Settings button ref
+    loginModal:  document.getElementById('loginModal'),
+    signUpModal: document.getElementById('signUpModal'),
+    settingsModal: document.getElementById('settingsModal'), // New: Settings modal ref
+    closeLogin:  document.getElementById('closeLogin'),
+    closeSignUp: document.getElementById('closeSignUp'),
+    closeSettings: document.getElementById('closeSettings'), // New: Close settings button ref
+    toggleLoginEye:  document.getElementById('toggleLoginEye'),
+    toggleSignUpEye: document.getElementById('toggleSignUpEye'),
+    toggleSignUpConfEye: document.getElementById('toggleSignUpConfEye'),
+    doLogin:    document.getElementById('doLogin'),
+    doSignUp:   document.getElementById('doSignUp'),
+    doLogout:   document.getElementById('doLogout'), // Moved logout button ref inside settings
+    loginEmail:    document.getElementById('loginEmail'), // Changed to loginEmail
+    loginPassword:    document.getElementById('loginPassword'), // Renamed for clarity
+    signUpEmail:  document.getElementById('signUpEmail'),
+    signUpUsername:   document.getElementById('signUpUsername'), // Renamed for clarity
+    signUpPassword:   document.getElementById('signUpPassword'), // Renamed for clarity
+    signUpConfirm:   document.getElementById('signUpConfirm'), // Renamed for clarity
+    leaderboard:  document.getElementById('leaderboard'),
+    loadingSpinner: document.getElementById('loadingSpinner'),
+    // Audio Elements
+    backgroundMusic: document.getElementById('backgroundMusic'),
+    correctSound: document.getElementById('correctSound'),
+    wrongSound: document.getElementById('wrongSound'),
+    gameOverSound: document.getElementById('gameOverSound'),
+    buttonClickSound: document.getElementById('buttonClickSound'),
+    // Audio Controls
+    volumeSlider: document.getElementById('volumeSlider'),
+    musicToggleBtn: document.getElementById('musicToggleBtn'),
+    sfxToggleBtn: document.getElementById('sfxToggleBtn'),
+    // New settings message and navigation buttons
+    loginForMoreGroup: document.getElementById('loginForMoreGroup'), // Reference to the div wrapper
+    goToSignUpBtn: document.getElementById('goToSignUpBtn'),
+    goToLoginBtn: document.getElementById('goToLoginBtn'),
+    goToLoginFromSettingsBtn: document.getElementById('goToLoginFromSettingsBtn') // New button in settings
+  };
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize Firebase
+    if (Object.keys(firebaseConfig).length > 0) {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        // Sign in anonymously or with custom token on app load
+        if (initialAuthToken) {
+            try {
+                await signInWithCustomToken(auth, initialAuthToken);
+                console.log("Signed in with custom token.");
+            } catch (error) {
+                console.error("Error signing in with custom token, falling back to anonymous:", error);
+                await signInAnonymously(auth); // Fallback to anonymous if custom token fails
+            }
+        } else {
+            await signInAnonymously(auth);
+            console.log("Signed in anonymously.");
+        }
+
+        // Auth state change listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUserId = user.uid;
+                console.log("Firebase Auth State Changed. UID:", currentUserId);
+                // Fetch user's game-specific username from Firestore
+                const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists() && userDocSnap.data().username) {
+                    currentUsername = userDocSnap.data().username;
+                } else {
+                    // If no game profile exists for this UID (e.g., brand new anonymous user)
+                    // This case should ideally only happen for new anonymous users before they sign up
+                    // For a newly registered email/password user, their profile will be created immediately after auth
+                    currentUsername = `guest_${currentUserId.substring(0, 8)}`;
+                }
+                updateUserStatus();
+                setupLeaderboardListener(); // Set up leaderboard listener after auth is ready
+                loadUserSettings(); // Load user-specific settings
+            } else {
+                // User logged out or no user is authenticated
+                currentUserId = null;
+                currentUsername = null;
+                updateUserStatus();
+                S.leaderboard.innerHTML = '<li>Log in to see leaderboard</li>'; // Clear leaderboard
+                loadUserSettings(); // Load local settings for guest mode
+            }
+        });
+    } else {
+        console.warn("Firebase configuration not provided. Running in local-only mode (no global data persistence).");
+        currentUsername = 'local_guest'; // Default local username
+        currentUserId = 'local_id'; // Mock UID for local mode
+        updateUserStatus();
+        S.leaderboard.innerHTML = '<li>Firebase not configured - leaderboard not available.</li>';
+        loadUserSettings(); // Load local settings
+    }
+
+    // Game state variables
+    let correct = 0;    // Number of correct answers
+    let answered = 0;   // Total questions answered
+    let timeLeft = 120; // Time remaining in seconds
+    const maxQ = 10;    // Maximum number of questions per game
+    let timerID = null; // Timer interval ID
+
+    // --- Helper Functions ---
+
+    /**
+     * Shows or hides the loading spinner.
+     * @param {boolean} show - True to show, false to hide.
+     */
+    function showLoadingSpinner(show) {
+        S.loadingSpinner.style.display = show ? 'block' : 'none';
+    }
+
+    /**
+     * Plays a sound effect if SFX are enabled.
+     * @param {HTMLAudioElement} audio A reference to the audio element.
+     */
+    function playSoundEffect(audio) {
+        if (audio && S.sfxToggleBtn.textContent === 'SFX On') { // Play sound only if SFX are ON
+            audio.currentTime = 0; // Rewind to start in case it's still playing
+            audio.play().catch(e => console.warn("Failed to play sound effect:", e));
+        }
+    }
+
+    /**
+     * Updates the score, progress, and timer displays.
+     */
+    function updateDisplay(){
+      S.score.textContent    = `Score: ${correct}`;
+      S.progress.textContent = `${correct}/${answered}`;
+      S.timer.textContent    = `Time: ${timeLeft}`;
+    }
+
+    /**
+     * Updates the user status display (e.g., "Logged in as [username]").
+     * Also controls visibility of login, signup, and settings/logout buttons.
+     */
+    function updateUserStatus(){
+      S.userStatus.textContent = currentUsername ? `Logged in as ${currentUsername}` : 'Not logged in';
+      S.userIdDisplay.textContent = currentUserId ? `UID: ${currentUserId}` : '';
+
+      // Settings button is always visible
+      S.settingsBtn.style.display = 'inline-block';
+
+      // Check if the user is a registered user (not an anonymous guest)
+      if (auth && auth.currentUser && !auth.currentUser.isAnonymous) {
+          S.loginBtn.style.display = 'none';
+          S.signUpBtn.style.display = 'none';
+          S.doLogout.style.display = 'inline-block'; // Show logout button in settings modal
+          S.loginForMoreGroup.style.display = 'none'; // Hide "Login for more" button
+      } else { // User is anonymous or not authenticated
+          S.loginBtn.style.display = 'inline-block';
+          S.signUpBtn.style.display = 'inline-block';
+          S.doLogout.style.display = 'none'; // Hide logout button in settings modal
+          S.loginForMoreGroup.style.display = 'block'; // Show "Login for more" button
+      }
+    }
+
+    /**
+     * Sets up a real-time listener for the leaderboard data from Firestore.
+     */
+    function setupLeaderboardListener() {
+        if (!db || !currentUserId) {
+            console.log("Firestore not initialized or user not authenticated. Leaderboard will not update in real-time.");
+            return;
+        }
+
+        const leaderboardRef = collection(db, `artifacts/${appId}/public/data/users`);
+        onSnapshot(leaderboardRef, (snapshot) => {
+            const list = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                // Ensure data.username, data.progress, and data.progress.score exist and score is a number
+                if (data.username && data.progress && typeof data.progress.score === 'number') {
+                    list.push({ u: data.username, score: data.progress.score });
+                }
+            });
+            // Sort in memory (as orderBy might require an index)
+            list.sort((a, b) => b.score - a.score);
+            S.leaderboard.innerHTML = list.slice(0, 5).map(e => `<li>${e.u}: ${e.score}</li>`).join('');
+        }, (error) => {
+            console.error("Error fetching leaderboard in real-time:", error);
+            showMessage("Failed to load leaderboard data. Please check console for details.");
+        });
+    }
+
+    /**
+     * Loads user settings (music volume and playback state, SFX state) from Firestore or localStorage.
+     */
+    async function loadUserSettings() {
+        let savedVolume = 0.5; // Default volume
+        let isPlaying = false; // Default music playback state
+        let sfxEnabled = true; // Default SFX state (on)
+
+        if (db && currentUserId && auth.currentUser && !auth.currentUser.isAnonymous) {
+            // Load from Firestore for registered users
+            try {
+                const settingsDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/settings/audio`);
+                const settingsDocSnap = await getDoc(settingsDocRef);
+                if (settingsDocSnap.exists()) {
+                    const data = settingsDocSnap.data();
+                    if (typeof data.volume === 'number') savedVolume = data.volume;
+                    if (typeof data.isPlaying === 'boolean') isPlaying = data.isPlaying;
+                    if (typeof data.sfxEnabled === 'boolean') sfxEnabled = data.sfxEnabled; // Load SFX state
+                    console.log("Loaded settings from Firestore:", data);
+                }
+            } catch (error) {
+                console.error("Error loading settings from Firestore:", error);
+            }
+        } else {
+            // Load from localStorage for guest users or if Firebase not configured
+            try {
+                const localSettings = JSON.parse(localStorage.getItem('gameUserSettings')) || {};
+                if (typeof localSettings.volume === 'number') savedVolume = localSettings.volume;
+                if (typeof localSettings.isPlaying === 'boolean') isPlaying = localSettings.isPlaying;
+                if (typeof localSettings.sfxEnabled === 'boolean') sfxEnabled = localSettings.sfxEnabled; // Load SFX state
+                console.log("Loaded settings from localStorage:", localSettings);
+            } catch (error) {
+                console.error("Error parsing local settings:", error);
+            }
+        }
+
+        S.backgroundMusic.volume = savedVolume;
+        S.volumeSlider.value = savedVolume;
+
+        if (isPlaying) {
+            playMusic();
+        } else {
+            pauseMusic();
+        }
+
+        // Set SFX toggle button state
+        S.sfxToggleBtn.textContent = sfxEnabled ? 'SFX On' : 'SFX Off';
+        if (!sfxEnabled) {
+            S.sfxToggleBtn.classList.add('paused');
+        } else {
+            S.sfxToggleBtn.classList.remove('paused');
+        }
+    }
+
+    /**
+     * Saves user settings (music volume and playback state, SFX state) to Firestore or localStorage.
+     */
+    async function saveUserSettings() {
+        const settings = {
+            volume: S.backgroundMusic.volume,
+            isPlaying: !S.backgroundMusic.paused,
+            sfxEnabled: S.sfxToggleBtn.textContent === 'SFX On' // Save SFX state
+        };
+
+        if (db && currentUserId && auth.currentUser && !auth.currentUser.isAnonymous) {
+            // Save to Firestore for registered users
+            try {
+                const settingsDocRef = doc(db, `artifacts/${appId}/users/${currentUserId}/settings/audio`);
+                await setDoc(settingsDocRef, settings, { merge: true });
+                console.log("Saved settings to Firestore:", settings);
+            } catch (error) {
+                console.error("Error saving settings to Firestore:", error);
+            }
+        } else {
+            // Save to localStorage for guest users or if Firebase not configured
+            localStorage.setItem('gameUserSettings', JSON.stringify(settings));
+            console.log("Saved settings to localStorage:", settings);
+        }
+    }
+
+    /**
+     * Plays the background music.
+     */
+    function playMusic() {
+        const playPromise = S.backgroundMusic.play();
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                S.musicToggleBtn.textContent = 'Pause Music';
+                S.musicToggleBtn.classList.remove('paused');
+                saveUserSettings(); // Save state
+            })
+            .catch(error => {
+                console.warn("Autoplay was prevented. User interaction needed to play music.", error);
+                S.musicToggleBtn.textContent = 'Play Music (click to start)';
+                S.musicToggleBtn.classList.add('paused');
+                // Don't save isPlaying=true if autoplay was prevented due to browser policy
+            });
+        }
+    }
+
+    /**
+     * Pauses the background music.
+     */
+    function pauseMusic() {
+        S.backgroundMusic.pause();
+        S.musicToggleBtn.textContent = 'Play Music';
+        S.musicToggleBtn.classList.add('paused');
+        saveUserSettings(); // Save state
+    }
+
+    /**
+     * Toggles music playback.
+     */
+    function toggleMusic() {
+        if (S.backgroundMusic.paused) {
+            playMusic();
+        } else {
+            pauseMusic();
+        }
+    }
+
+    /**
+     * Toggles sound effects on/off.
+     */
+    function toggleSoundEffects() {
+        if (S.sfxToggleBtn.textContent === 'SFX On') {
+            S.sfxToggleBtn.textContent = 'SFX Off';
+            S.sfxToggleBtn.classList.add('paused');
+        } else {
+            S.sfxToggleBtn.textContent = 'SFX On';
+            S.sfxToggleBtn.classList.remove('paused');
+        }
+        saveUserSettings(); // Save SFX state
+    }
+
+    /**
+     * Generates a mathematical expression that evaluates to 47.
+     * @returns {string} A string representation of the correct expression.
+     */
+    function genCorrect(){
+      const opts = ['94/2','47*1','23+24','48-1','50-3', '40+7', '100-53', '94/2']; // More options
+      return opts[Math.floor(Math.random()*opts.length)];
+    }
+
+    /**
+     * Generates a mathematical expression that does NOT evaluate to 47.
+     * Ensures the result is not too close to 47.
+     * @returns {string} A string representation of a wrong expression.
+     */
+    function genWrong(){
+      let expr;
+      let result;
+      // Loop until a wrong expression is generated that is not 47
+      do {
+        let a = Math.ceil(Math.random()*90); // Random number between 1 and 90
+        let b = Math.ceil(Math.random()*90);
+        let op = ['+','-','*','/'][Math.floor(Math.random()*4)]; // Random operator
+        expr = `${a}${op}${b}`;
+        try {
+            result = eval(expr); // Evaluate the expression
+        } catch (e) {
+            result = NaN; // Handle potential division by zero or invalid expressions
+        }
+      } while(isNaN(result) || Math.abs(result - 47) < 0.001 || result < 0 || result > 1000); // Ensure not 47 and reasonable range
+      return expr;
+    }
+
+    /**
+     * Renders a new question to the UI, including the target number and
+     * a set of answer options (buttons).
+     */
+    function renderQuestion(){
+      // If maximum questions reached, end the game
+      if(answered >= maxQ) return endGame();
+
+      S.options.innerHTML = ''; // Clear previous options
+      let correctExpr = genCorrect(); // Generate a correct answer
+      let choices = [correctExpr]; // Start with the correct answer in the choices
+
+      // Generate 5 more wrong answers (total 6 options)
+      while(choices.length < 6){
+        let w = genWrong();
+        // Only add if not already in choices to avoid duplicates
+        if(!choices.includes(w)) choices.push(w);
+      }
+
+      // Shuffle the choices randomly
+      choices.sort(()=>Math.random()-.5);
+
+      // Display question elements
+      S.question.style.display = 'block';
+      S.label.style.display    = 'block';
+      S.options.style.display  = 'flex';
+
+      // Create a button for each choice
+      choices.forEach(expr=>{
+        let btn = document.createElement('button');
+        btn.textContent = expr;
+        // Attach click event handler, also plays button click sound
+        btn.onclick = () => {
+            playSoundEffect(S.buttonClickSound); // Play button click sound
+            handleAnswer(btn, expr);
+        };
+        S.options.append(btn);
+      });
+    }
+
+    /**
+     * Handles user's answer selection. Checks if correct, updates score,
+     * and prepares for the next question.
+     * @param {HTMLButtonElement} btn The button element clicked by the user.
+     * @param {string} expr The mathematical expression on the clicked button.
+     */
+    function handleAnswer(btn, expr){
+      answered++; // Increment answered questions count
+      let ok = Math.abs(eval(expr)-47) < 0.001; // Check if the expression evaluates to 47
+
+      if(ok){
+        correct++; // Increment correct answers count
+        btn.classList.add('correct'); // Highlight the button as correct
+        playSoundEffect(S.correctSound); // Play correct sound
+      } else {
+        btn.classList.add('wrong'); // Highlight the button as wrong
+        playSoundEffect(S.wrongSound); // Play wrong sound
+        // Find and highlight the correct answer among the options
+        Array.from(S.options.children)
+          .find(b=>Math.abs(eval(b.textContent)-47)<0.001)
+          .classList.add('correct');
+      }
+      updateDisplay(); // Update score and progress
+      setTimeout(renderQuestion, 700); // Move to next question after a short delay
+    }
+
+    /**
+     * Starts the game timer, decrementing every second.
+     */
+    function startTimer(){
+      timerID = setInterval(()=>{
+        timeLeft--;
+        updateDisplay();
+        if(timeLeft <= 0){
+          clearInterval(timerID); // Stop timer if time runs out
+          endGame(); // End the game
+        }
+      },1000);
+    }
+
+    /**
+     * Displays a countdown before the game starts.
+     * @param {function} cb Callback function to execute after countdown.
+     */
+    function showCountdown(cb){
+      let count = 3;
+      S.cOverlay.textContent = count;
+      S.cOverlay.style.display = 'flex'; // Show countdown overlay
+      let cid = setInterval(()=>{
+        count--;
+        if(count > 0){
+          S.cOverlay.textContent = count;
+        } else {
+          clearInterval(cid); // Stop countdown
+          S.cOverlay.style.display = 'none'; // Hide overlay
+          cb(); // Execute callback (start game logic)
+        }
+      },1000);
+    }
+
+    /**
+     * Initializes and starts a new game. Resets scores, time, and UI.
+     */
+    function startGame(){
+        if (!currentUserId) {
+            showMessage("Please wait for authentication to complete before starting the game.");
+            return;
+        }
+      correct = 0; answered = 0; timeLeft = 120; // Reset game state
+      clearInterval(timerID); // Clear any existing timer
+      updateDisplay(); // Update display with new state
+      S.startBtn.style.display = 'none'; // Hide start button
+      S.restartBtn.style.display = 'inline-block'; // Show restart button
+      S.quitBtn.style.display = 'inline-block'; // Show quit button
+      showCountdown(()=>{ // Show countdown then start game
+        renderQuestion();
+        startTimer();
+      });
+    }
+
+    /**
+     * Handles quitting the game. Asks for confirmation and resets UI if confirmed.
+     */
+    function quitGame(){
+      // Use a custom modal instead of alert/confirm
+      showConfirmation("Are you sure you want to quit? Your score will be lost.", () => {
+          clearInterval(timerID); // Stop timer
+          S.question.style.display = S.label.style.display = S.options.style.display = 'none'; // Hide game elements
+          S.options.innerHTML = ''; // Clear options
+          S.startBtn.style.display = 'inline-block'; // Show start button
+          S.restartBtn.style.display = S.quitBtn.style.display = 'none'; // Hide other buttons
+      });
+    }
+
+    /**
+     * Ends the game, stops the timer, updates final score, and updates leaderboard.
+     * Saves the score to Firestore if a user is logged in.
+     */
+    async function endGame(){
+      clearInterval(timerID); // Stop timer
+      S.question.textContent = 'Game Over!'; // Display game over message
+      S.options.innerHTML = ''; // Clear options
+      playSoundEffect(S.gameOverSound); // Play game over sound
+
+      // Only save if a registered user (not anonymous) and Firestore is available
+      if(db && currentUserId && auth.currentUser && !auth.currentUser.isAnonymous) {
+        showLoadingSpinner(true);
+        try {
+            const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, currentUserId);
+            const userDocSnap = await getDoc(userDocRef);
+            let currentHighestScore = 0;
+            if (userDocSnap.exists() && userDocSnap.data().progress && typeof userDocSnap.data().progress.score === 'number') {
+                currentHighestScore = userDocSnap.data().progress.score;
+            }
+
+            // Only update if the current score is higher
+            if (correct > currentHighestScore) {
+                await setDoc(userDocRef, {
+                    username: currentUsername,
+                    progress: { score: correct },
+                    userId: currentUserId // Store userId explicitly
+                }, { merge: true }); // Use merge to avoid overwriting other fields
+                showMessage(`New High Score: ${correct}!`);
+            } else {
+                showMessage(`Game Over! Your score: ${correct}. Highest score: ${currentHighestScore}.`);
+            }
+        } catch (error) {
+            console.error("Error saving score to Firestore:", error);
+            showMessage("Failed to save score. Please check console for details.");
+        } finally {
+            showLoadingSpinner(false);
+        }
+      } else {
+        showMessage(`Game Over! Your score: ${correct}. Log in to save your score!`);
+      }
+      // Show restart and quit buttons again after game over
+      S.restartBtn.style.display = 'inline-block';
+      S.quitBtn.style.display = 'inline-block';
+    }
+
+    /**
+     * Adapts the layout based on screen orientation.
+     */
+    function adapt(){
+      let orientation = window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
+      document.body.dataset.orientation = orientation;
+    }
+    window.addEventListener('resize', adapt); // Add event listener for window resize
+    adapt(); // Initial adaptation on load
+
+    // --- Custom Alert/Confirmation Modals ---
+
+    function showMessage(message) {
+      const modal = document.createElement('div');
+      modal.classList.add('modal');
+      modal.style.display = 'flex'; // Make sure it's visible
+      modal.innerHTML = `
+        <div class="modal-content">
+          <button class="close-modal" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5rem;cursor:pointer;">❌</button>
+          <p>${message}</p>
+          <button class="modal-ok-btn">OK</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('.close-modal').onclick = () => {
+        modal.remove();
+      };
+      modal.querySelector('.modal-ok-btn').onclick = () => {
+        modal.remove();
+      };
+    }
+
+    function showConfirmation(message, onConfirm) {
+      const modal = document.createElement('div');
+      modal.classList.add('modal');
+      modal.style.display = 'flex';
+      modal.innerHTML = `
+        <div class="modal-content">
+          <button class="close-modal" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:1.5rem;cursor:pointer;">❌</button>
+          <p>${message}</p>
+          <button class="modal-confirm-btn" style="margin-right:10px;">Yes</button>
+          <button class="modal-cancel-btn">No</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('.close-modal').onclick = () => {
+        modal.remove();
+      };
+      modal.querySelector('.modal-confirm-btn').onclick = () => {
+        onConfirm();
+        modal.remove();
+      };
+      modal.querySelector('.modal-cancel-btn').onclick = () => {
+        modal.remove();
+      };
+    }
+
+    // --- Event Bindings ---
+
+    // Game control buttons
+    S.startBtn.onclick   = startGame;
+    S.restartBtn.onclick = startGame;
+    S.quitBtn.onclick    = quitGame;
+
+    // Authentication modals
+    S.loginBtn.onclick     = () => { S.loginModal.style.display = 'flex'; };
+    S.closeLogin.onclick   = () => { S.loginModal.style.display = 'none'; };
+    S.toggleLoginEye.onclick = () => {
+      S.loginPassword.type = S.loginPassword.type === 'password' ? 'text' : 'password';
+    };
+
+    S.signUpBtn.onclick    = () => { S.signUpModal.style.display = 'flex'; };
+    S.closeSignUp.onclick  = () => { S.signUpModal.style.display = 'none'; };
+    S.toggleSignUpEye.onclick = () => {
+      S.signUpPassword.type = S.signUpPassword.type === 'password' ? 'text' : 'password';
+    };
+    S.toggleSignUpConfEye.onclick = () => {
+      S.signUpConfirm.type = S.signUpConfirm.type === 'password' ? 'text' : 'password';
+    };
+
+    // Navigation between login and signup modals
+    S.goToSignUpBtn.onclick = () => {
+        S.loginModal.style.display = 'none';
+        S.signUpModal.style.display = 'flex';
+    };
+    S.goToLoginBtn.onclick = () => {
+        S.signUpModal.style.display = 'none';
+        S.loginModal.style.display = 'flex';
+    };
+
+    // Settings button functionality
+    S.settingsBtn.onclick = () => { S.settingsModal.style.display = 'flex'; };
+    S.closeSettings.onclick = () => { S.settingsModal.style.display = 'none'; };
+
+    // New: "Log in for more" button in settings to go to login modal
+    S.goToLoginFromSettingsBtn.onclick = () => {
+        S.settingsModal.style.display = 'none';
+        S.loginModal.style.display = 'flex';
+    };
+
+    // Logout button functionality (moved inside settings modal)
+    S.doLogout.onclick = async () => {
+        showConfirmation("Are you sure you want to log out?", async () => {
+            if (auth) {
+                try {
+                    await signOut(auth); // Sign out from Firebase Auth
+                    // onAuthStateChanged listener will handle clearing currentUserId, currentUsername, and updating UI
+                    showMessage("You have been logged out.");
+                    S.settingsModal.style.display = 'none'; // Close settings modal after logout
+                } catch (error) {
+                    console.error("Error during logout:", error);
+                    showMessage("Logout failed. Please try again.");
+                }
+            } else {
+                // Should not happen if Firebase is initialized, but fallback for local-only mode
+                currentUserId = null;
+                currentUsername = null;
+                showMessage("You have been logged out (local session cleared).");
+                updateUserStatus();
+                S.leaderboard.innerHTML = '<li>Firebase not configured - leaderboard not available.</li>';
+                S.settingsModal.style.display = 'none';
+            }
+        });
+    };
+
+    // Music and SFX control event listeners
+    S.volumeSlider.oninput = () => {
+        S.backgroundMusic.volume = S.volumeSlider.value;
+        // Optionally, set volume for SFX too if desired, or keep separate
+        S.correctSound.volume = S.wrongSound.volume = S.gameOverSound.volume = S.buttonClickSound.volume = S.volumeSlider.value;
+        saveUserSettings(); // Save volume changes
+    };
+    S.musicToggleBtn.onclick = toggleMusic;
+    S.sfxToggleBtn.onclick = toggleSoundEffects;
+
+    // Login submission with Firebase Authentication
+    S.doLogin.onclick = async () => {
+        if (!auth) {
+            showMessage("Firebase authentication is not initialized. Please refresh and try again.");
+            showLoadingSpinner(false);
+            return;
+        }
+        showLoadingSpinner(true);
+        try {
+            const email = S.loginEmail.value.trim();
+            const password = S.loginPassword.value;
+
+            // Use Firebase's signInWithEmailAndPassword for secure authentication
+            await signInWithEmailAndPassword(auth, email, password);
+            // Firebase Auth will automatically update the auth state, which triggers onAuthStateChanged
+            // onAuthStateChanged will then fetch/update currentUsername and other settings.
+            showMessage(`Logged in as ${email}!`);
+            S.loginModal.style.display = 'none';
+        } catch (error) {
+            console.error("Error during login:", error);
+            let errorMessage = "Login failed. Please check your credentials.";
+            if (error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                errorMessage = "Invalid email or password.";
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = "Too many login attempts. Please try again later.";
+            }
+            showMessage(errorMessage);
+        } finally {
+            showLoadingSpinner(false);
+        }
+    };
+
+    // Sign Up submission with Firebase Authentication
+    S.doSignUp.onclick = async () => {
+        if (!auth) {
+            showMessage("Firebase authentication is not initialized. Please refresh and try again.");
+            showLoadingSpinner(false);
+            return;
+        }
+        showLoadingSpinner(true);
+        try {
+            const email = S.signUpEmail.value.trim();
+            const username = S.signUpUsername.value.trim();
+            const password = S.signUpPassword.value;
+            const confirmPassword = S.signUpConfirm.value;
+
+            // Basic client-side validation
+            if (!email || !email.includes('@')) {
+                showMessage("Please enter a valid email address.");
+                return;
+            }
+            if (!username) {
+                showMessage("Please enter a username.");
+                return;
+            }
+            if (!password || password.length < 6) { // Firebase Auth min password length is 6
+                showMessage("Password must be at least 6 characters long.");
+                return;
+            }
+            if (password !== confirmPassword) {
+                showMessage("Passwords do not match.");
+                return;
+            }
+
+            // Check if username already exists in Firestore (optional, but good for uniqueness)
+            const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
+            const q = query(usersRef, where("username", "==", username));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                showMessage("Username already exists. Please choose a different one.");
+                return;
+            }
+
+            // Create user in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const newUserUid = userCredential.user.uid;
+
+            // Save game profile data (username and initial score) to Firestore, linked by UID
+            // IMPORTANT: The 'password' field is NOT stored here. Firebase Auth handles it securely.
+            const userDocRef = doc(db, `artifacts/${appId}/public/data/users`, newUserUid);
+            await setDoc(userDocRef, {
+                username: username,
+                email: email, // Email can be stored here for display/reference, but not for authentication
+                progress: { score: 0 },
+                userId: newUserUid // Store userId explicitly
+            });
+
+            showMessage("Account created successfully! You are now logged in!");
+            S.signUpModal.style.display = 'none';
+            // onAuthStateChanged will handle updating currentUsername, etc.
+        } catch (error) {
+            console.error("Error during sign up:", error);
+            let errorMessage = "Sign up failed.";
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = "This email address is already in use.";
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = "Invalid email format.";
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Password is too weak. Please use a stronger one.";
+            }
+            showMessage(errorMessage + " Please check the browser console for details.");
+        } finally {
+            showLoadingSpinner(false);
+        }
+    };
+
+    // --- Initial UI Setup ---
+    updateUserStatus();
+    // Leaderboard listener and user settings are set up after authentication in onAuthStateChanged
+  });
+</script>
+</body>
+</html>
